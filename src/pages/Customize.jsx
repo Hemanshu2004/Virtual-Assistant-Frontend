@@ -54,8 +54,8 @@ function Customize() {
       <IoMdArrowRoundBack
   className="absolute top-[30px] left-[30px] text-white w-[25px] h-[25px] cursor-pointer 
              hover:text-blue-400 transition-colors duration-300"
-  onClick={() => navigate("/")} // navigate directly to home
-/>
+             onClick={() => navigate("/")} 
+             />
 
 
 

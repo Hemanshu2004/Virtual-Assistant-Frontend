@@ -15,27 +15,25 @@ function App() {
       <Route
         path="/"
         element={
-          userData?.assistantImage && userData?.assistantName ? (
-            <Home />
-          ) : (
+          userData?.assistantImage && userData?.assistantName ? 
+            <Home /> : 
             <Navigate to="/customize" />
-          )
         }
       />
       <Route
-        path="/signup"
-        element={!userData ? <SignUp /> : <Navigate to="/customize" />}
+        path='/signup'
+        element={!userData ? <SignUp /> : <Navigate to="/" />}
       />
       <Route
-        path="/signin"
+        path='/signin'
         element={!userData ? <SignIn /> : <Navigate to="/" />}
       />
       <Route
-        path="/customize"
+        path='/customize'
         element={userData ? <Customize /> : <Navigate to="/signup" />}
       />
       <Route
-        path="/customize2"
+        path='/customize2'
         element={userData ? <Customize2 /> : <Navigate to="/signup" />}
       />
     </Routes>
