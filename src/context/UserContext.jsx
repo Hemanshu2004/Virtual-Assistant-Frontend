@@ -26,25 +26,44 @@ function UserContext({ children }) {
   }, [serverUrl]);
 
   // Ask the AI Assistant (Gemini API)
-  const getGeminiResponse = useCallback(
-    async (command) => {
-      try {
-        const result = await axios.post(
-          `${serverUrl}/api/user/asktoassistant`,
-          { command },
-          { withCredentials: true }
-        );
-        return result.data;
-      } catch (error) {
-        console.error("Error getting Gemini response:", error.response?.data || error.message);
-        return {
-          response: "Sorry, something went wrong with the assistant.",
-          type: "general",
-        };
-      }
-    },
-    [serverUrl]
-  );
+  const geminiResponse = async (command, assistantName, userName) => {
+  try {
+    const apiUrl = process.env.GEMINI_API_URL;
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    const prompt = `...`; // keep your full prompt here
+
+    const result = await axios.post(
+      apiUrl,
+      { contents: [{ parts: [{ text: prompt }] }] },
+      { headers: { Authorization: `Bearer ${apiKey}` } }
+    );
+
+    let text = result.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    // Try parsing JSON from Gemini
+    try {
+      const jsonStart = text.indexOf("{");
+      const jsonEnd = text.lastIndexOf("}") + 1;
+      return JSON.parse(text.substring(jsonStart, jsonEnd));
+    } catch {
+      // fallback if Gemini response is not valid JSON
+      return {
+        type: "general",
+        userInput: command,
+        response: "Sorry, I couldn't understand that properly.",
+      };
+    }
+  } catch (error) {
+    console.error("Gemini API error:", error.response?.data || error.message);
+    return {
+      type: "general",
+      userInput: command,
+      response: "Sorry, something went wrong with the assistant.",
+    };
+  }
+};
+
 
   // Auto fetch user on mount
   useEffect(() => {
