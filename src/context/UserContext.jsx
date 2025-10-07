@@ -4,7 +4,7 @@ import axios from "axios";
 export const UserDataContext = createContext();
 
 function UserContext({ children }) {
-  const serverUrl = import.meta.env.VITE_SERVER_URL || "http://localhost:8000";
+  const serverUrl = import.meta.env.VITE_SERVER_URL || "https://virtual-assistant-mern-1.onrender.com";
 
   const [userData, setUserData] = useState(null);
   const [frontendImage, setFrontendImage] = useState(null);
