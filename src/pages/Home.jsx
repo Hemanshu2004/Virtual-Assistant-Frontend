@@ -35,19 +35,20 @@ function Home() {
   };
 
   // ------------------------------
-  // SAFE START FOR SPEECH RECOGNITION
+  // SAFE RECOGNITION START
   // ------------------------------
-  const startRecognition = () => {
-    try {
-      recognitionRef.current?.start();
-      setListening(true);
-    } catch (error) {
-      if (!error.message.includes("start")) console.error("recognition error:", error);
+  const safeRecognitionStart = () => {
+    if (!isSpeakingRef.current && !isRecognizingRef.current) {
+      try {
+        recognitionRef.current?.start();
+      } catch (err) {
+        if (err.name !== "InvalidStateError") console.error(err);
+      }
     }
   };
 
   // ------------------------------
-  // SPEAK FUNCTION (ASSISTANT RESPONSE)
+  // SPEAK FUNCTION
   // ------------------------------
   const speak = (text) => {
     if (!text) return;
@@ -65,7 +66,9 @@ function Home() {
     utterance.onend = () => {
       isSpeakingRef.current = false;
       setAiText("");
-      startRecognition();
+      setTimeout(() => {
+        safeRecognitionStart();
+      }, 200); // small delay to ensure recognition stops
     };
 
     synth.cancel(); // stop overlapping voices
@@ -112,16 +115,6 @@ function Home() {
     recognition.lang = "en-US";
     recognitionRef.current = recognition;
 
-    const safeRecognition = () => {
-      if (!isSpeakingRef.current && !isRecognizingRef.current) {
-        try {
-          recognition.start();
-        } catch (err) {
-          if (err.name !== "InvalidStateError") console.error(err);
-        }
-      }
-    };
-
     recognition.onstart = () => {
       isRecognizingRef.current = true;
       setListening(true);
@@ -130,14 +123,16 @@ function Home() {
     recognition.onend = () => {
       isRecognizingRef.current = false;
       setListening(false);
-      if (!isSpeakingRef.current) setTimeout(safeRecognition, 1000);
+      if (!isSpeakingRef.current) {
+        setTimeout(safeRecognitionStart, 200);
+      }
     };
 
     recognition.onerror = (event) => {
       isRecognizingRef.current = false;
       setListening(false);
       if (event.error !== "aborted" && !isSpeakingRef.current) {
-        setTimeout(safeRecognition, 1000);
+        setTimeout(safeRecognitionStart, 200);
       }
     };
 
@@ -146,7 +141,6 @@ function Home() {
       const transcript = lastResult[0].transcript.trim();
       setUserText(transcript);
 
-      // Wake word detection (assistant name)
       if (
         userData?.assistantName &&
         transcript.toLowerCase().includes(userData.assistantName.toLowerCase())
@@ -165,11 +159,13 @@ function Home() {
       }
     };
 
+    // fallback restart in case recognition stops unexpectedly
     const fallback = setInterval(() => {
-      if (!isSpeakingRef.current && !isRecognizingRef.current) safeRecognition();
+      safeRecognitionStart();
     }, 10000);
 
-    safeRecognition();
+    // initial start
+    safeRecognitionStart();
 
     return () => {
       recognition.stop();
