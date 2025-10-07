@@ -1,6 +1,6 @@
 import React, { useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import Card from "../components/card";
+import Card from "../components/Card";
 import { FaImages } from "react-icons/fa";
 import { UserDataContext } from "../context/UserContext";
 import { IoMdArrowRoundBack } from "react-icons/io";
